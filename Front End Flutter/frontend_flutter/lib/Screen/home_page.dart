@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    // TEXTFIELD CONTROLLER
     final add1 = TextEditingController();
     final add2 = TextEditingController();
     final add3 = TextEditingController();
@@ -23,6 +24,12 @@ class _HomePageState extends State<HomePage> {
     int green = 0x3B;
     int blue = 0x6C;
     Color color = Color.fromARGB(255, red, green, blue);
+
+    String _valGender;
+    String _valFriends;
+    List _listGender = ["Male", "Female"];
+
+    late String itemGender = '';
 
     // < ---- Key Validasi Input ----- >
     final _formKey = GlobalKey<FormState>();
@@ -66,57 +73,86 @@ class _HomePageState extends State<HomePage> {
                 title: Center(
                   child: Icon(
                     Icons.person_add,
-                    size: 50,
+                    size: 30,
                     color: Colors.grey,
                   ),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
-                content: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: add1,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: "Input your name",
-                          prefixIcon: Icon(Icons.person),
+                scrollable: true,
+                content: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: add1,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: "Input your name",
+                            prefixIcon: Icon(Icons.person),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter some text';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
-                          }
-                          return null;
-                        },
-                      ),
-                      TextFormField(
-                        controller: add2,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: "Input your email",
-                          prefixIcon: Icon(Icons.email),
+                        TextFormField(
+                          controller: add2,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: "Input your email",
+                            prefixIcon: Icon(Icons.email),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter some email';
+                            } else if (!EmailValidator.validate(value)) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some email';
-                          } else if (!EmailValidator.validate(value)) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      TextFormField(
-                        controller: add3,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: "Input your gender",
-                          prefixIcon: Icon(Icons.people),
+                        SizedBox(
+                          height: 5,
                         ),
-                      ),
-                    ],
+                        DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            fit: FlexFit.loose,
+                            showSelectedItems: true,
+                          ),
+                          items: ["Pria", "Wanita"],
+                          onChanged: ((value) {
+                            itemGender = value!.toUpperCase();
+                          }),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              icon: Icon(Icons.male),
+                              labelText: "Gender",
+                            ),
+                          ),
+                          selectedItem: add3.text,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please input Your Gender';
+                            }
+                          },
+                        )
+                        // TextFormField(
+                        //   controller: add3,
+                        //   autofocus: true,
+                        //   decoration: InputDecoration(
+                        //     hintText: "Input your gender",
+                        //     prefixIcon: Icon(Icons.people),
+                        //   ),
+                        // ),
+                      ],
+                    ),
                   ),
                 ),
                 actions: [
@@ -124,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         primary: Colors.purple,
-                        fixedSize: const Size(100, 25),
+                        fixedSize: const Size(100, 20),
                       ),
                       child: Text(
                         "Submit",
@@ -138,7 +174,7 @@ class _HomePageState extends State<HomePage> {
                             {
                               "nama": add1.text,
                               "email": add2.text,
-                              "gender": add3.text,
+                              "gender": itemGender,
                               "password": "",
                             },
                           );
@@ -216,6 +252,8 @@ class _UsingTheDataState extends State<UsingTheData> {
     // < ---- Key Validasi Input ----- >
     final _formKey = GlobalKey<FormState>();
 
+    late String itemGender = '';
+
     return FutureBuilder(
         future: getData().then((value) => value.body),
         builder: (context, snapshot) {
@@ -266,7 +304,7 @@ class _UsingTheDataState extends State<UsingTheData> {
                               ),
                             ),
                             title: Text(
-                              "${json[index]["nama"] ?? 'A'}",
+                              "${json[index]["nama"].toString().toUpperCase()}",
                               style: TextStyle(fontSize: 25),
                             ),
                             subtitle: Text(
@@ -331,36 +369,67 @@ class _UsingTheDataState extends State<UsingTheData> {
                                                   return null;
                                                 },
                                               ),
-                                              TextFormField(
-                                                controller: add3,
-                                                autofocus: true,
-                                                decoration: InputDecoration(
-                                                    hintText:
-                                                        "Update your gender"),
-                                              ),
+                                              DropdownSearch<String>(
+                                                popupProps:
+                                                    const PopupProps.menu(
+                                                  fit: FlexFit.loose,
+                                                  showSelectedItems: true,
+                                                ),
+                                                items: ["Pria", "Wanita"],
+                                                onChanged: ((value) {
+                                                  itemGender =
+                                                      value!.toUpperCase();
+                                                }),
+                                                dropdownDecoratorProps:
+                                                    const DropDownDecoratorProps(
+                                                  dropdownSearchDecoration:
+                                                      InputDecoration(
+                                                    icon: Icon(Icons.male),
+                                                    labelText: "Gender",
+                                                  ),
+                                                ),
+                                                selectedItem: add3.text,
+                                                validator: (value) {
+                                                  if (value == null ||
+                                                      value.isEmpty) {
+                                                    return 'Please input Your Gender';
+                                                  }
+                                                },
+                                              )
                                             ],
                                           ),
                                         ),
                                         actions: [
-                                          IconButton(
-                                            onPressed: () {
-                                              if (_formKey.currentState!
-                                                  .validate()) {
-                                                updateData(json[index]["id"], {
-                                                  "nama": add1.text,
-                                                  "email": add2.text,
-                                                  "gender": add3.text,
-                                                  "password": "",
-                                                });
-                                                add1.clear();
-                                                add2.clear();
-                                                add3.clear();
-                                                Navigator.of(context).pop();
-                                              }
-                                            },
-                                            icon: IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(Icons.draw_outlined),
+                                          Center(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                primary: Colors.purple,
+                                                fixedSize: const Size(100, 25),
+                                              ),
+                                              child: Text(
+                                                "Update",
+                                                style: TextStyle(
+                                                    color: Color.fromARGB(
+                                                        255, 255, 255, 255),
+                                                    backgroundColor:
+                                                        Colors.purple),
+                                              ),
+                                              onPressed: () {
+                                                if (_formKey.currentState!
+                                                    .validate()) {
+                                                  updateData(
+                                                      json[index]["id"], {
+                                                    "nama": add1.text,
+                                                    "email": add2.text,
+                                                    "gender": add3.text,
+                                                    "password": "",
+                                                  });
+                                                  add1.clear();
+                                                  add2.clear();
+                                                  add3.clear();
+                                                  Navigator.of(context).pop();
+                                                }
+                                              },
                                             ),
                                           ),
                                         ],
